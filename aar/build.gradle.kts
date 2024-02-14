@@ -48,6 +48,7 @@ dependencies {
         implementation(it)
         api(it)
     }
+    implementation("de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev")
     implementation("de.honoka.sdk:honoka-framework-utils:1.0.4")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     compileOnly("org.projectlombok:lombok:${Versions.lombokVersion}".also {
@@ -131,8 +132,8 @@ tasks.register("checkVersion") {
     doLast {
         println("Versions:\n")
         //若project未设置version，则这里取到的version值为unspecified
-        println("${name}=${version}")
-        val passed = version.toString().lowercase().run {
+        println("${project.name}=${project.version}")
+        val passed = project.version.toString().lowercase().run {
             !(isEmpty() || this == "unspecified" || contains("dev"))
         }
         println("\nResults:\n")
