@@ -2,9 +2,9 @@
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
         maven("https://maven.aliyun.com/repository/public")
         mavenCentral()
+        mavenLocal()
         maven("https://mirrors.honoka.de/maven-repo")
         google()
     }

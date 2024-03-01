@@ -8,7 +8,7 @@ plugins {
     kotlin("android")
 }
 
-version = "1.0.3-dev"
+version = "1.1.0-dev"
 
 android {
     namespace = "de.honoka.sdk.util.android"
@@ -42,14 +42,14 @@ android {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutinesVersion}")
     arrayOf(
+        "de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev",
+        "de.honoka.sdk:honoka-framework-utils:1.0.4",
         "cn.hutool:hutool-all:5.8.18",
         "com.j256.ormlite:ormlite-android:5.1"
     ).forEach {
         implementation(it)
         api(it)
     }
-    implementation("de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev")
-    implementation("de.honoka.sdk:honoka-framework-utils:1.0.4")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     compileOnly("org.projectlombok:lombok:${Versions.lombokVersion}".also {
         annotationProcessor(it)

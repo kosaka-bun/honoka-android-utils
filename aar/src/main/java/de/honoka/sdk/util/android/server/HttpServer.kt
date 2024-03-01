@@ -40,6 +40,10 @@ class HttpServer(port: Int = HttpServerVariables.serverPort) : NanoHTTPD(port) {
         }
 
         fun checkOrRestartInstance() {
+            if(!::instance.isInitialized) {
+                createInstance()
+                return
+            }
             if(instance.isAlive) return
             instance.start()
         }
