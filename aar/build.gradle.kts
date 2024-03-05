@@ -51,6 +51,7 @@ dependencies {
     }
     implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-status-pages:${Versions.ktor}")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     compileOnly("org.projectlombok:lombok:${Versions.lombok}".also {
         annotationProcessor(it)

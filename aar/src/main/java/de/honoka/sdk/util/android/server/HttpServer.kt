@@ -3,6 +3,7 @@
 package de.honoka.sdk.util.android.server
 
 import fi.iki.elonen.NanoHTTPD
+import io.ktor.server.routing.*
 
 @Suppress("ConstPropertyName")
 object HttpServerVariables {
@@ -16,13 +17,16 @@ object HttpServerVariables {
     fun getImageUrlByPrefix(path: String) = getUrlByPrefix("$imageUrlPrefix$path")
 }
 
-class HttpServer(val port: Int = HttpServerVariables.serverPort) {
+class HttpServer(
+    val port: Int = HttpServerVariables.serverPort,
+    val customRoutingList: List<Routing.() -> Unit> = listOf()
+) {
 
     companion object {
 
         lateinit var instance: HttpServer
 
-        private val staticResourcesPrefixes = arrayOf(
+        val staticResourcesPrefixes = arrayOf(
             "/assets", "/font", "/img", "/js", "/favicon.ico"
         )
 
@@ -41,7 +45,7 @@ class HttpServer(val port: Int = HttpServerVariables.serverPort) {
         }
     }
 
-    private var engine: KtorEngine = KtorEngine(port)
+    private var engine: KtorEngine = KtorEngine(port, customRoutingList)
 
     val isActive get() = engine.isActive
 
