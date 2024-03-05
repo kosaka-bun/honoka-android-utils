@@ -12,7 +12,6 @@ version = "1.1.0-dev"
 
 android {
     namespace = "de.honoka.sdk.util.android"
-
     compileSdk = 33
 
     defaultConfig {
@@ -40,7 +39,7 @@ android {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutinesVersion}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutines}")
     arrayOf(
         "de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev",
         "de.honoka.sdk:honoka-framework-utils:1.0.4",
@@ -50,8 +49,10 @@ dependencies {
         implementation(it)
         api(it)
     }
+    implementation("io.ktor:ktor-server-core:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
-    compileOnly("org.projectlombok:lombok:${Versions.lombokVersion}".also {
+    compileOnly("org.projectlombok:lombok:${Versions.lombok}".also {
         annotationProcessor(it)
         testCompileOnly(it)
         testAnnotationProcessor(it)
