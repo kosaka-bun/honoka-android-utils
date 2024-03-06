@@ -19,7 +19,7 @@ import java.io.File
 
 class KtorEngine(
     private val port: Int,
-    private val customRoutingList: List<Routing.() -> Unit> = listOf()
+    private val customRoutingList: List<RoutingDefinition> = listOf()
 ) {
 
     var rawEngine: ApplicationEngine? = null

@@ -5,6 +5,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 suspend fun ApplicationCall.respondJson(obj: Any?, httpStatus: HttpStatusCode = HttpStatusCode.OK) {
     if(obj is String) {
@@ -18,3 +19,5 @@ fun StatusPagesConfig.status(
     status: HttpStatusCode,
     handler: suspend (ApplicationCall, HttpStatusCode) -> Unit
 ) = status(status) { call, statusParam -> handler(call, statusParam) }
+
+typealias RoutingDefinition = Routing.() -> Unit

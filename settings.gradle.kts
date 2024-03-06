@@ -3,19 +3,19 @@
 dependencyResolutionManagement {
     repositories {
         maven("https://maven.aliyun.com/repository/public")
+        google()
         mavenCentral()
         mavenLocal()
         maven("https://mirrors.honoka.de/maven-repo")
-        google()
     }
 }
 
 pluginManagement {
     repositories {
         maven("https://maven.aliyun.com/repository/gradle-plugin")
+        google()
         mavenCentral()
         gradlePluginPortal()
-        google()
     }
 }
 

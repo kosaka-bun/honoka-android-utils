@@ -40,16 +40,16 @@ android {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutines}")
-    arrayOf(
+    listOf(
         "de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev",
         "de.honoka.sdk:honoka-framework-utils:1.0.4",
         "cn.hutool:hutool-all:5.8.18",
-        "com.j256.ormlite:ormlite-android:5.1"
+        "com.j256.ormlite:ormlite-android:5.1",
+        "io.ktor:ktor-server-core:${Versions.ktor}"
     ).forEach {
         implementation(it)
         api(it)
     }
-    implementation("io.ktor:ktor-server-core:${Versions.ktor}")
     implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
     implementation("io.ktor:ktor-server-status-pages:${Versions.ktor}")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -108,9 +108,9 @@ publishing {
             }
             afterEvaluate {
                 val artifacts = listOf(
+                    tasks["releaseSourcesJar"],
                     tasks["bundleReleaseAar"],
-                    tasks["jar"],
-                    tasks["releaseSourcesJar"]
+                    tasks["jar"]
                 )
                 setArtifacts(artifacts)
             }
