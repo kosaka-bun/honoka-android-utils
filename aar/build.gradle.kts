@@ -39,6 +39,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.appcompat:appcompat:1.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutines}")
     listOf(
         "de.honoka.sdk:honoka-kotlin-utils:1.0.0-dev",
