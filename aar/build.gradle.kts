@@ -1,5 +1,4 @@
 import de.honoka.gradle.buildsrc.Versions
-import java.nio.file.Paths
 
 plugins {
     `maven-publish`
@@ -109,25 +108,13 @@ publishing {
             }
             afterEvaluate {
                 val artifacts = listOf(
-                    tasks["releaseSourcesJar"],
                     tasks["bundleReleaseAar"],
-                    tasks["jar"]
+                    tasks["releaseSourcesJar"]
                 )
                 setArtifacts(artifacts)
             }
         }
     }
-}
-
-tasks.register("jar", Zip::class.java) {
-    group = "build"
-    dependsOn("bundleLibCompileToJarRelease")
-    val jarPath = Paths.get(
-        buildDir.absolutePath,
-        "./intermediates/compile_library_classes_jar/release/classes.jar"
-    ).normalize().toFile()
-    (archiveFile as RegularFileProperty).convention { jarPath }
-    archiveExtension.set("jar")
 }
 
 tasks.register("checkVersion") {
