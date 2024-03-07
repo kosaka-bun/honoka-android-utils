@@ -7,6 +7,15 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+object KtorCodeUtils {
+
+    fun getNestedRoutingDefinition(prefix: String, definition: Route.() -> Unit): RoutingDefinition = {
+        route(prefix) {
+            definition()
+        }
+    }
+}
+
 suspend fun ApplicationCall.respondJson(obj: Any?, httpStatus: HttpStatusCode = HttpStatusCode.OK) {
     if(obj is String) {
         respondText(obj, status = httpStatus)
