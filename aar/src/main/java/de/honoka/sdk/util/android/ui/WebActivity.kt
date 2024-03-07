@@ -254,3 +254,12 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         }
     }
 }
+
+class DefaultWebActivity : AbstractWebActivity() {
+
+    override fun extendedOnResume() {}
+
+    override fun newJavascriptInterfaceContainer(): JavascriptInterfaceContainer = run {
+        JavascriptInterfaceContainer(listOf(), webView)
+    }
+}

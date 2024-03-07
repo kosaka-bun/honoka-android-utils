@@ -1,6 +1,7 @@
 package de.honoka.sdk.util.android.ui
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.view.WindowManager
 
@@ -16,4 +17,13 @@ fun Activity.fullScreenToShow() {
     )
     //隐藏虚拟按键
     window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN
+}
+
+fun Activity.jumpToWebActivty(webActivityClass: Class<out AbstractWebActivity> = DefaultWebActivity::class.java) {
+    runOnUiThread {
+        startActivity(Intent(this, webActivityClass).apply {
+            putExtra("firstWebActivity", true)
+        })
+        finish()
+    }
 }
