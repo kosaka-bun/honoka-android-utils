@@ -65,6 +65,10 @@ fun ContentResolver.call(authority: String, method: String? = null, args: Any? =
 }
 
 //该方法上的clazz参数仅用于防止与返回Any类型的call函数的签名产生冲突，不实际使用
+/*
+ * 需注意，若实化泛型T中含有嵌套泛型，比如调用该方法时表现为：call<List<Entity>>()，则在代码中只能获取到
+ * 泛型T的顶级类型，即List的Class对象。
+ */
 @Suppress("UNUSED_PARAMETER")
 inline fun <reified T> ContentResolver.call(
     authority: String, method: String? = null, args: Any? = null, clazz: Class<T>? = null

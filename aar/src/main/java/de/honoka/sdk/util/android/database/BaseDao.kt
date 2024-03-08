@@ -14,6 +14,19 @@ abstract class BaseDao<T>(internal val entityClass: Class<T>) {
 
     val rawDao: Dao<T, Any>
 
+    private val entityCache = HashMap<Any?, T?>()
+
+    private val idField = run {
+        var idField: Field? = null
+        for(field in entityClass.declaredFields) {
+            val annotation = field.getAnnotation(DatabaseField::class.java)
+            if(annotation == null || !annotation.id) continue
+            idField = field
+            break
+        }
+        idField
+    }
+
     init {
         databaseHelper = initDatabaseHelper()
         rawDao = databaseHelper.getDao(entityClass)
@@ -53,7 +66,17 @@ abstract class BaseDao<T>(internal val entityClass: Class<T>) {
 
     fun listAll(): List<T> = rawDao.queryForAll()
 
-    fun getById(id: Any?): T? = rawDao.queryForId(id)
+    fun getById(id: Any?): T? {
+        entityCache[id] = null
+        return getCacheById(id)
+    }
+
+    fun getCacheById(id: Any?): T? {
+        entityCache[id]?.let { return it }
+        return rawDao.queryForId(id).also {
+            entityCache[id] = it
+        }
+    }
 
     fun query(condition: QueryBuilder<T, Any>.() -> Unit): List<T> = rawDao.query(newPreparedQueryBuilder(condition))
 
@@ -64,16 +87,14 @@ abstract class BaseDao<T>(internal val entityClass: Class<T>) {
 
     fun save(entity: T) = rawDao.create(entity)
 
-    fun updateById(entity: T) = rawDao.update(entity)
+    private fun getId(entity: T): Any? = idField?.get(entity)
+
+    fun updateById(entity: T) {
+        rawDao.update(entity)
+        entityCache[getId(entity)] = null
+    }
 
     fun saveOrUpdate(entity: T) {
-        var idField: Field? = null
-        for(field in entityClass.declaredFields) {
-            val annotation = field.getAnnotation(DatabaseField::class.java)
-            if(annotation == null || !annotation.id) continue
-            idField = field
-            break
-        }
         idField ?: run {
             save(entity)
             return
@@ -82,5 +103,8 @@ abstract class BaseDao<T>(internal val entityClass: Class<T>) {
         if(getById(id) == null) save(entity) else updateById(entity)
     }
 
-    fun deleteById(id: Any) = rawDao.deleteById(id)
+    fun deleteById(id: Any) {
+        rawDao.deleteById(id)
+        entityCache[id] = null
+    }
 }
