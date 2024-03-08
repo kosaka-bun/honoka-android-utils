@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
-        <activity android:name=".ui.AbstractWebActivity" android:exported="false" />
+        <activity android:name=".ui.AbstractWebActivity"
+                  android:configChanges="orientation|screenSize"
+                  android:exported="false" />
+        <activity android:name=".ui.DefaultWebActivity"
+                  android:configChanges="orientation|screenSize"
+                  android:exported="false" />
     </application>
 </manifest>

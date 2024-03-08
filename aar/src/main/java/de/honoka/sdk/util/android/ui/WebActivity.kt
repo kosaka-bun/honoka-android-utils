@@ -147,6 +147,8 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         }
     }
 
+    abstract val definedJsInterfaceInstances: List<Any>
+
     @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -192,14 +194,15 @@ abstract class AbstractWebActivity : AppCompatActivity() {
             }
             isVerticalScrollBarEnabled = false
             scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
-            jsInterfaceContainer = newJavascriptInterfaceContainer()
+            jsInterfaceContainer = JavascriptInterfaceContainer(
+                definedJsInterfaceInstances,
+                this@AbstractWebActivity
+            )
             loadUrl(this@AbstractWebActivity.url)
         }
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
         orientationEventListener.enable()
     }
-
-    abstract fun newJavascriptInterfaceContainer(): JavascriptInterfaceContainer
 
     protected fun setFullScreen(fullScreen: Boolean) {
         if(fullScreen) {
@@ -257,9 +260,7 @@ abstract class AbstractWebActivity : AppCompatActivity() {
 
 class DefaultWebActivity : AbstractWebActivity() {
 
-    override fun extendedOnResume() {}
+    override val definedJsInterfaceInstances: List<Any> = listOf()
 
-    override fun newJavascriptInterfaceContainer(): JavascriptInterfaceContainer = run {
-        JavascriptInterfaceContainer(listOf(), webView)
-    }
+    override fun extendedOnResume() {}
 }

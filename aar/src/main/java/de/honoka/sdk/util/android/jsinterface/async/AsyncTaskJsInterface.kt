@@ -2,13 +2,13 @@ package de.honoka.sdk.util.android.jsinterface.async
 
 import android.util.Log
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import cn.hutool.core.thread.BlockPolicy
 import cn.hutool.core.util.StrUtil
 import cn.hutool.json.JSONUtil
 import de.honoka.sdk.util.android.common.evaluateJavascriptOnUiThread
 import de.honoka.sdk.util.android.common.toMethodArgs
 import de.honoka.sdk.util.android.jsinterface.JavascriptInterfaceContainer
+import de.honoka.sdk.util.android.ui.AbstractWebActivity
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.concurrent.LinkedBlockingQueue
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 class AsyncTaskJsInterface(
     private val jsInterfaceContainer: JavascriptInterfaceContainer,
-    private val webView: WebView
+    private val webActivity: AbstractWebActivity
 ) {
 
     private val threadPool = ThreadPoolExecutor(
@@ -59,7 +59,7 @@ class AsyncTaskJsInterface(
             }
             val resultStr = JSONUtil.toJsonStr(result)
             val script = "window.jsInterfaceAsyncMethodCallbackUtils.invokeCallback('$callbackId', $resultStr)"
-            webView.evaluateJavascriptOnUiThread(script)
+            webActivity.webView.evaluateJavascriptOnUiThread(script)
         }
     }
 }
