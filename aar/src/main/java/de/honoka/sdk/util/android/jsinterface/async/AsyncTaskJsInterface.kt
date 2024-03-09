@@ -49,7 +49,7 @@ class AsyncTaskJsInterface(
                 }
             } catch(t: Throwable) {
                 val throwable = if(t is InvocationTargetException) t.cause ?: t else t
-                Log.e("", "", throwable)
+                Log.e(javaClass.simpleName, "", throwable)
                 result.run {
                     isResolve = false
                     message = throwable.message.let {

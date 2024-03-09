@@ -6,6 +6,8 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import cn.hutool.core.exceptions.ExceptionUtil
 import cn.hutool.core.util.StrUtil
 import cn.hutool.json.JSON
 import cn.hutool.json.JSONObject
@@ -36,9 +38,20 @@ abstract class BaseContentProvider : ContentProvider() {
 
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle = Bundle().apply {
         val args = if(StrUtil.isNotBlank(arg)) JSONUtil.parse(arg) else null
-        val result = call(method.ifBlank { null }, args)?.let { if(it !is Unit) it else null }
+        val result = try {
+            call(method.ifBlank { null }, args)?.let { if(it !is Unit) it else null }
+        } catch(t: Throwable) {
+            t
+        }
         putString("json", JSONObject().also {
-            it["result"] = result
+            if(result !is Throwable) {
+                it["result"] = result
+            } else {
+                it["error"] = JSONObject().also { jo ->
+                    jo["info"] = ExceptionUtil.getMessage(result)
+                    jo["stackTrace"] = ExceptionUtil.stacktraceToString(result)
+                }
+            }
         }.toString())
     }
 
@@ -56,22 +69,33 @@ object ContentProviderUtils {
     }
 }
 
+@Suppress("MemberVisibilityCanBePrivate", "CanBeParameter", "unused")
+class ContentProviderCallException(val info: String, val stackTraceText: String) : Exception(info)
+
 fun ContentResolver.call(authority: String, method: String? = null, args: Any? = null): Any? {
     val uri = Uri.parse("content://$authority")
     val argsStr = args?.let { JSONUtil.toJsonStr(args) }
-    return call(uri, method ?: "", argsStr, null)?.let {
-        it.getString("json").let { json -> JSONUtil.parseObj(json)["result"] }
+    val result = call(uri, method ?: "", argsStr, null)?.let {
+        it.getString("json").let { jsonStr ->
+            val json = JSONUtil.parseObj(jsonStr)
+            json.getJSONObject("error")?.let { error ->
+                val stackTrace = error.getStr("stackTrace").apply {
+                    Log.e(ContentResolver::class.simpleName, this)
+                }
+                throw ContentProviderCallException(error.getStr("info"), stackTrace)
+            }
+            json["result"]
+        }
     }
+    return result
 }
 
-//该方法上的clazz参数仅用于防止与返回Any类型的call函数的签名产生冲突，不实际使用
 /*
  * 需注意，若实化泛型T中含有嵌套泛型，比如调用该方法时表现为：call<List<Entity>>()，则在代码中只能获取到
  * 泛型T的顶级类型，即List的Class对象。
  */
-@Suppress("UNUSED_PARAMETER")
-inline fun <reified T> ContentResolver.call(
-    authority: String, method: String? = null, args: Any? = null, clazz: Class<T>? = null
+inline fun <reified T> ContentResolver.typedCall(
+    authority: String, method: String? = null, args: Any? = null
 ): T = call(authority, method, args).let {
     ContentProviderUtils.getTypedResult<T>(it!!)
 }
@@ -80,9 +104,8 @@ fun contentResolverCall(authority: String, method: String? = null, args: Any? = 
     GlobalComponents.application.contentResolver.call(authority, method, args)
 }
 
-@Suppress("UNUSED_PARAMETER")
-inline fun <reified T> contentResolverCall(
-    authority: String, method: String? = null, args: Any? = null, clazz: Class<T>? = null
+inline fun <reified T> contentResolverTypedCall(
+    authority: String, method: String? = null, args: Any? = null
 ): T = contentResolverCall(authority, method, args).let {
     ContentProviderUtils.getTypedResult<T>(it!!)
 }
