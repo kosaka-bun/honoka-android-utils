@@ -7,12 +7,17 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+@Suppress("MemberVisibilityCanBePrivate")
 object KtorCodeUtils {
 
     fun getNestedRoutingDefinition(prefix: String, definition: Route.() -> Unit): RoutingDefinition = {
         route(prefix) {
             definition()
         }
+    }
+
+    fun getNestedApiRoutingDefinition(prefix: String, definition: Route.() -> Unit): RoutingDefinition = run {
+        getNestedRoutingDefinition("/api$prefix", definition)
     }
 }
 

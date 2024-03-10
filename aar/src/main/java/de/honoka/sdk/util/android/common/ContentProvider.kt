@@ -16,7 +16,7 @@ import cn.hutool.json.JSONUtil
 abstract class BaseContentProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
-        GlobalComponents.initApplicationFieldByContextIfNotInited(context!!)
+        GlobalComponents.initApplicationField(context)
         return true
     }
 

@@ -7,11 +7,8 @@ object GlobalComponents {
 
     lateinit var application: Application
 
-    fun initApplicationFieldByContextIfNotInited(context: Context) {
-        runCatching {
-            application.packageName
-            return
-        }
-        application = context.applicationContext as Application
+    fun initApplicationField(context: Context?) {
+        if(::application.isInitialized) return
+        application = context!!.applicationContext as Application
     }
 }
