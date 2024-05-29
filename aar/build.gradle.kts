@@ -37,6 +37,7 @@ android {
     }
 }
 
+@Suppress("GradleDependency")
 dependencies {
     implementation("androidx.appcompat:appcompat:1.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.kotlinCoroutines}")

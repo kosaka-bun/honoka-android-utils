@@ -9,6 +9,7 @@ import cn.hutool.json.JSONArray
 import cn.hutool.json.JSONObject
 import cn.hutool.json.JSONUtil
 import kotlinx.coroutines.*
+import org.intellij.lang.annotations.Language
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -25,13 +26,13 @@ fun launchCoroutineOnUiThread(block: suspend () -> Unit): Job = launchCoroutine(
 
 fun launchCoroutineOnIoThread(block: suspend () -> Unit): Job = launchCoroutine(block, Dispatchers.IO)
 
-fun WebView.evaluateJavascriptOnUiThread(script: String, callback: (String) -> Unit = {}) {
+fun WebView.evaluateJavascriptOnUiThread(@Language("JavaScript") script: String, callback: (String) -> Unit = {}) {
     launchCoroutineOnUiThread {
         evaluateJavascript(script, callback)
     }
 }
 
-fun runShellCommandForResult(command: String, waitTimeSecends: Int? = null): String {
+fun runShellCommandForResult(@Language("Shell") command: String, waitTimeSecends: Int? = null): String {
     Runtime.getRuntime().exec(command).run {
         val processOut = ByteArrayOutputStream()
         if(waitTimeSecends == null) {

@@ -25,6 +25,7 @@ class AsyncTaskJsInterface(
         LinkedBlockingQueue(), BlockPolicy()
     )
 
+    @Suppress("JSUnresolvedReference")
     @JavascriptInterface
     fun invokeAsyncMethod(jsInterfaceName: String, methodName: String, callbackId: String, args: String) {
         threadPool.submit {

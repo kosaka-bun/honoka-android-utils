@@ -42,7 +42,7 @@ abstract class BaseContentProvider : ContentProvider() {
             call(method.ifBlank { null }, args)?.let { if(it !is Unit) it else null }
         } catch(t: Throwable) {
             ExceptionUtil.getRootCause(t).also {
-                Log.e(BaseContentProvider::class.simpleName, "", it)
+                Log.e(javaClass.simpleName, "", it)
             }
         }
         putString("json", JSONObject().also {
