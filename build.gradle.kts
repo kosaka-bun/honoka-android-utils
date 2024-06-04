@@ -1,10 +1,13 @@
+import de.honoka.gradle.buildsrc.MavenPublish.defineCheckVersionOfProjectsTask
+
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    val versions = de.honoka.gradle.buildsrc.Versions
-    //plugins
-    id("com.android.library") version versions.libraryPlugin apply false
-    kotlin("android") version versions.kotlin apply false
+    alias(libs.plugins.android.gradle.plugin) apply false
+    alias(libs.plugins.kotlin) apply false
 }
 
 allprojects {
     group = "de.honoka.sdk"
 }
+
+defineCheckVersionOfProjectsTask()
