@@ -11,10 +11,10 @@ plugins {
 
 android {
     namespace = "de.honoka.sdk.util.android"
-    compileSdk = 33
+    compileSdk = libs.versions.android.sdk.compile.get().toInt()
 
     defaultConfig {
-        minSdk = 26
+        minSdk = libs.versions.android.sdk.min.get().toInt()
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
