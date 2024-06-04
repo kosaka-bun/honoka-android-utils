@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.kotlin) apply false
 }
 
+version = libs.versions.root.get()
+
 allprojects {
     group = "de.honoka.sdk"
 }
