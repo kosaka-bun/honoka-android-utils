@@ -2,6 +2,7 @@ package de.honoka.gradle.buildsrc
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.create
@@ -15,8 +16,6 @@ object MavenPublish {
     private lateinit var rootProject: Project
 
     private val projectsWillPublish = ArrayList<Project>()
-
-    var sourceDirSet: Set<File> = setOf()
 
     fun Project.setupAarVersionAndPublishing(version: String) {
         val project = this
@@ -34,36 +33,7 @@ object MavenPublish {
                     groupId = group as String
                     artifactId = rootProject.name
                     this.version = version
-                    pom.withXml {
-                        val apiDependencies = ArrayList<String>()
-                        project.configurations["api"].allDependencies.forEach {
-                            apiDependencies.add("${it.group}:${it.name}")
-                        }
-                        asNode().appendNode("dependencies").run {
-                            project.configurations.implementation.configure {
-                                allDependencies.forEach {
-                                    val isInvalidDependency = it.group == null ||
-                                        it.name.lowercase() == "unspecified" ||
-                                        it.version == null
-                                    if(isInvalidDependency) return@forEach
-                                    val moduleName = "${it.group}:${it.name}"
-                                    appendNode("dependency").run {
-                                        val subNodes = hashMapOf(
-                                            "groupId" to it.group,
-                                            "artifactId" to it.name,
-                                            "version" to it.version
-                                        )
-                                        if(!apiDependencies.contains(moduleName)) {
-                                            subNodes["scope"] = "runtime"
-                                        }
-                                        subNodes.forEach { entry ->
-                                            appendNode(entry.key, entry.value)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    pom.setAndroidAarPomDependencies(project)
                     afterEvaluate {
                         val artifacts = listOf(
                             tasks["bundleReleaseAar"],
@@ -77,7 +47,38 @@ object MavenPublish {
         projectsWillPublish.add(this)
     }
 
-    fun Project.defineAarSourcesJarTask() {
+    private fun MavenPom.setAndroidAarPomDependencies(project: Project) = withXml {
+        val apiDependencies = ArrayList<String>()
+        project.configurations["api"].allDependencies.forEach {
+            apiDependencies.add("${it.group}:${it.name}")
+        }
+        asNode().appendNode("dependencies").run {
+            project.configurations.implementation.configure {
+                allDependencies.forEach {
+                    val isInvalidDependency = it.group == null ||
+                        it.name.lowercase() == "unspecified" ||
+                        it.version == null
+                    if(isInvalidDependency) return@forEach
+                    val moduleName = "${it.group}:${it.name}"
+                    appendNode("dependency").run {
+                        val subNodes = hashMapOf(
+                            "groupId" to it.group,
+                            "artifactId" to it.name,
+                            "version" to it.version
+                        )
+                        if(!apiDependencies.contains(moduleName)) {
+                            subNodes["scope"] = "runtime"
+                        }
+                        subNodes.forEach { entry ->
+                            appendNode(entry.key, entry.value)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun Project.defineAarSourcesJarTask(sourceDirSet: Set<File>) {
         tasks.register("sourcesJar", Jar::class.java) {
             group = "build"
             destinationDirectory.set(Paths.get(buildDir.absolutePath, "libs").toFile())
