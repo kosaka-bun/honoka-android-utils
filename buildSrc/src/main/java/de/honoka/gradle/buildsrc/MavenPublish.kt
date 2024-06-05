@@ -3,15 +3,20 @@ package de.honoka.gradle.buildsrc
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.maven
+import java.io.File
+import java.nio.file.Paths
 
 object MavenPublish {
 
     private lateinit var rootProject: Project
 
     private val projectsWillPublish = ArrayList<Project>()
+
+    var sourceDirSet: Set<File> = setOf()
 
     fun Project.setupAarVersionAndPublishing(version: String) {
         val project = this
@@ -62,7 +67,7 @@ object MavenPublish {
                     afterEvaluate {
                         val artifacts = listOf(
                             tasks["bundleReleaseAar"],
-                            tasks["releaseSourcesJar"]
+                            tasks["sourcesJar"]
                         )
                         setArtifacts(artifacts)
                     }
@@ -70,6 +75,16 @@ object MavenPublish {
             }
         }
         projectsWillPublish.add(this)
+    }
+
+    fun Project.defineAarSourcesJarTask() {
+        tasks.register("sourcesJar", Jar::class.java) {
+            group = "build"
+            destinationDirectory.set(Paths.get(buildDir.absolutePath, "libs").toFile())
+            archiveFileName.set("${project.name}-$version-sources.jar")
+            archiveClassifier.set("sources")
+            from(*sourceDirSet.toTypedArray())
+        }
     }
 
     fun Project.defineCheckVersionOfProjectsTask() {

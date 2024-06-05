@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.api.DefaultAndroidSourceDirectorySet
+import de.honoka.gradle.buildsrc.MavenPublish
+import de.honoka.gradle.buildsrc.MavenPublish.defineAarSourcesJarTask
 import de.honoka.gradle.buildsrc.MavenPublish.setupAarVersionAndPublishing
 import de.honoka.gradle.buildsrc.publishing
 
@@ -29,6 +32,9 @@ android {
 
     sourceSets["main"].java {
         srcDir("/patchSrc/main/java")
+        if(this is DefaultAndroidSourceDirectorySet) {
+            MavenPublish.sourceDirSet = srcDirs
+        }
     }
 
     compileOptions {
@@ -77,3 +83,4 @@ publishing {
 }
 
 setupAarVersionAndPublishing(libs.versions.aar.get())
+defineAarSourcesJarTask()
