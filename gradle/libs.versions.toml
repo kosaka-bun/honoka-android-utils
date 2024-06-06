@@ -16,7 +16,7 @@ lombok = "1.18.26"
 
 [plugins]
 android-gradle-plugin = { id = "com.android.library", version.ref = "android-gradle-plugin" }
-kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 dependency-management = "io.spring.dependency-management:1.0.11.RELEASE"
 
 [libraries]
