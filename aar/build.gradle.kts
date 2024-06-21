@@ -80,4 +80,4 @@ publishing {
     }
 }
 
-setupAarVersionAndPublishing(libs.versions.aar.get())
+setupAarVersionAndPublishing(version.toString())

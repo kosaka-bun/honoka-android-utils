@@ -6,10 +6,9 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
 }
 
-version = libs.versions.root.get()
-
 allprojects {
     group = "de.honoka.sdk"
+    version = rootProject.libs.versions.root.get()
 }
 
 defineCheckVersionOfProjectsTask()

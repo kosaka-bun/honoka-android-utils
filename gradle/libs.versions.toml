@@ -1,7 +1,6 @@
 [versions]
 # project modules version
 root = "1.1.0-dev"
-aar = "1.1.0-dev"
 
 # dependencies version
 android-gradle-plugin = "8.0.0"
