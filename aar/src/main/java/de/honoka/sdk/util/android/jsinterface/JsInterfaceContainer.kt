@@ -34,6 +34,7 @@ class JavascriptInterfaceContainer(
         registerJsInterfaces()
     }
 
+    @SuppressLint("JavascriptInterface")
     private fun registerJsInterfaces() {
         interfaceInstances.forEach {
             webActivity.webView.addJavascriptInterface(it, "android_${it.javaClass.simpleName}")

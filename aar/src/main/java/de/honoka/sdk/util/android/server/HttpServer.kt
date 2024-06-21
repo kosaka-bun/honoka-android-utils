@@ -18,6 +18,7 @@ object HttpServerVariables {
     fun getApiUrlByPath(path: String) = getUrlByPath("/api$path")
 }
 
+@Suppress("CanBeParameter")
 class HttpServer(val port: Int = HttpServerVariables.serverPort) {
 
     companion object {
