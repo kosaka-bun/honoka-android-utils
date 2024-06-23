@@ -3,7 +3,6 @@ import de.honoka.gradle.buildsrc.MavenPublish.defineAarSourcesJarTask
 import de.honoka.gradle.buildsrc.MavenPublish.setupAarVersionAndPublishing
 import de.honoka.gradle.buildsrc.publishing
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     `maven-publish`
     alias(libs.plugins.dependency.management)

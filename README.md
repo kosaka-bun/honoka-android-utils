@@ -101,13 +101,16 @@ class WebActivity : AbstractWebActivity() {
 要使应用启动一个HTTP服务，只需直接调用`HttpServer.createInstance()`即可。`HttpServer`所监听的默认端口为`38081`，服务启动前将会检测端口占用情况，若端口被占用，则自动依次按端口号向下寻找可用的端口号，最多寻找10个端口号。若希望更改默认端口号，仅需在调用`createInstance()`前，修改`HttpServerVariables.serverPort`的值即可。
 
 默认情况下，`HttpServer`仅提供静态资源服务，包含以下URL与静态资源的映射:
-- `/`、`/index.html`、任何未定义的路由 → `[assets]/web/index.html`
-- `/assets/**` → `[assets]/web/assets/**`
-- `/font/**` → `[assets]/web/font/**`
-- `/img/**` → `[assets]/web/img/**`
-- `/js/**` → `[assets]/web/js/**`
-- `/favicon.ico` → `[assets]/web/favicon.ico`
-- `/android/img/**` → `[Application.dataDir]/**`
+
+|            URL             |            静态资源            |
+|:--------------------------:|:--------------------------:|
+| `/`、`/index.html`、任何未定义的路由 | `[assets]/web/index.html`  |
+|        `/assets/**`        |  `[assets]/web/assets/**`  |
+|         `/font/**`         |   `[assets]/web/font/**`   |
+|         `/img/**`          |   `[assets]/web/img/**`    |
+|          `/js/**`          |    `[assets]/web/js/**`    |
+|       `/favicon.ico`       | `[assets]/web/favicon.ico` |
+|     `/android/img/**`      | `[Application.dataDir]/**` |
 
 要添加自定义路由及其处理逻辑，可在调用`createInstance()`前，为`customRoutingList`变量重新赋值一个包含自定义路由定义的`List`。
 
@@ -119,7 +122,7 @@ class WebActivity : AbstractWebActivity() {
 ## 使用
 本项目部署于：
 
-[![maven-repo](https://github-readme-stats.vercel.app/api/pin/?username=kosaka-bun&repo=maven-repo)](https://github.com/kosaka-bun/maven-repo)
+[![maven-repo](https://github-readme-stats.vercel.app/api/pin/?username=honoka-studio&repo=maven-repo)](https://github.com/honoka-studio/maven-repo)
 
 使用前请先阅读此仓库的文档，为你的Gradle添加依赖仓库。
 
