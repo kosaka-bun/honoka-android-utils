@@ -1,29 +1,34 @@
 [versions]
 # project modules version
-root = "1.1.0-dev"
+p-root = "1.1.0-dev"
+
+# gradle plugins version
+gp-honoka-android = "1.0.0-dev"
+
+# android related version
+a-android-sdk-compile = "33"
+a-android-sdk-min = "26"
 
 # dependencies version
-android-gradle-plugin = "8.0.0"
-android-sdk-compile = "33"
-android-sdk-min = "26"
-kotlin = "1.8.0"
-kotlin-coroutines = "1.6.1"
-ktor = "2.2.3"
-honoka-kotlin-utils = "1.0.1-dev"
-honoka-framework-utils = "1.0.4"
-lombok = "1.18.26"
+d-honoka-kotlin-utils = "1.0.1-dev"
+d-honoka-framework-utils = "1.0.4"
+d-android-gradle-plugin = "8.0.0"
+d-kotlin = "1.8.10"
+d-kotlin-coroutines = "1.6.4"
+d-ktor = "2.2.3"
+d-lombok = "1.18.26"
 
 [plugins]
-android-gradle-plugin = { id = "com.android.library", version.ref = "android-gradle-plugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-dependency-management = "io.spring.dependency-management:1.0.11.RELEASE"
+honoka-android = { id = "de.honoka.gradle.plugin.android", version.ref = "gp-honoka-android" }
+android-gradle-plugin = { id = "com.android.library", version.ref = "d-android-gradle-plugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "d-kotlin" }
+dependency-management = "io.spring.dependency-management:1.1.6"
 
 [libraries]
-kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
-ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
-ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
-ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
-ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
-honoka-kotlin-utils = { module = "de.honoka.sdk:honoka-kotlin-utils", version.ref = "honoka-kotlin-utils" }
-honoka-framework-utils = { module = "de.honoka.sdk:honoka-framework-utils", version.ref = "honoka-framework-utils" }
-lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "d-kotlin" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "d-ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "d-ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "d-ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "d-ktor" }
+honoka-kotlin-utils = { module = "de.honoka.sdk:honoka-kotlin-utils", version.ref = "d-honoka-kotlin-utils" }
+honoka-framework-utils = { module = "de.honoka.sdk:honoka-framework-utils", version.ref = "d-honoka-framework-utils" }
