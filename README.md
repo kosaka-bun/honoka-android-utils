@@ -15,7 +15,7 @@ Honoka Android Utils是一款包含了各式各样实用工具的Android开发�
 请参阅：[更新日志](./docs/changelog.md)
 
 ## 功能展示
-### [BaseContentProvider](./aar/src/main/java/de/honoka/sdk/util/android/common/ContentProvider.kt)
+### [BaseContentProvider](./aar/src/main/java/de/honoka/sdk/util/android/basic/ContentProvider.kt)
 能基于`call`方法，实现与其他应用通过JSON数据进行通信的`ContentProvider`。继承该类时，仅需实现一个方法：
 ```kotlin
 //JSON类来自于hutool，是JSONObject和JSONArray的父类

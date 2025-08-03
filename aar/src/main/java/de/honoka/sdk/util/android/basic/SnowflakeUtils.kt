@@ -1,4 +1,4 @@
-package de.honoka.sdk.util.android.common
+package de.honoka.sdk.util.android.basic
 
 import cn.hutool.core.lang.Snowflake
 

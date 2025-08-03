@@ -3,43 +3,50 @@ package de.honoka.sdk.util.android.database
 import cn.hutool.core.util.ObjectUtil
 import com.j256.ormlite.dao.Dao
 import com.j256.ormlite.field.DatabaseField
+import com.j256.ormlite.stmt.PreparedQuery
 import com.j256.ormlite.stmt.QueryBuilder
 import com.j256.ormlite.table.DatabaseTable
-import java.lang.reflect.Field
+import de.honoka.sdk.util.kotlin.basic.exception
+import de.honoka.sdk.util.kotlin.text.singleLine
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.findAnnotation
 
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class BaseDao<T>(internal val entityClass: Class<T>) {
+abstract class BaseDao<T : Any>(internal val entityClass: KClass<T>) {
 
     private val databaseHelper: DatabaseHelper
 
     val rawDao: Dao<T, Any>
 
-    private val entityCache = HashMap<Any?, T?>()
+    private val entityCache = ConcurrentHashMap<Any, T>()
 
-    private val idField = run {
-        var idField: Field? = null
-        for(field in entityClass.declaredFields) {
-            val annotation = field.getAnnotation(DatabaseField::class.java)
-            if(annotation == null || !annotation.id) continue
-            idField = field
-            break
-        }
-        idField
+    private val idProp: KMutableProperty1<T, *> = entityClass.run {
+        declaredMemberProperties.first {
+            it.findAnnotation<DatabaseField>()?.id ?: false
+        } as KMutableProperty1<T, *>
     }
 
     init {
         databaseHelper = initDatabaseHelper()
-        rawDao = databaseHelper.getDao(entityClass)
+        rawDao = databaseHelper.getDao(entityClass.java)
     }
 
     private fun initDatabaseHelper(): DatabaseHelper {
-        val ormLiteTableAnnotation = entityClass.getAnnotation(DatabaseTable::class.java)
-        val tableAnnotation = entityClass.getAnnotation(Table::class.java)
+        val ormLiteTableAnnotation = entityClass.findAnnotation<DatabaseTable>()
+        val tableAnnotation = entityClass.findAnnotation<Table>()
         if(ObjectUtil.hasNull(ormLiteTableAnnotation, tableAnnotation)) {
-            throw Exception("Class ${entityClass.name} has no @DatabaseTable or @Table. Both of them are required.")
+            val msg = """
+                Class ${entityClass.qualifiedName} has no @DatabaseTable or @Table. |
+                Both of them are required.
+            """.singleLine()
+            exception(msg)
         }
-        fun newHelper() = DatabaseHelper(
-            this, "${ormLiteTableAnnotation!!.tableName}.db", tableAnnotation!!.version
+        fun newHelper(): DatabaseHelper = DatabaseHelper(
+            this, "${ormLiteTableAnnotation!!.tableName}.db",
+            tableAnnotation!!.version
         )
         //先创建一个DatabaseHelper，然后手动触发数据库的初始化（创建数据库文件以及数据表）、升级或降级
         newHelper().run {
@@ -47,64 +54,72 @@ abstract class BaseDao<T>(internal val entityClass: Class<T>) {
             close()
         }
         /*
-         * 如果使用创建的第一个DatabaseHelper触发升级的过程中，程序确实进行了升级的行为，那么第一个DatabaseHelper就不再
-         * 应当留作后续使用，应该关闭这个DatabaseHelper，创建一个新的DatabaseHelper，用于后续使用。
+         * 如果使用创建的第一个DatabaseHelper触发升级的过程中，程序确实进行了升级的行为，那么第一个
+         * DatabaseHelper就不再应当留作后续使用，应该关闭这个DatabaseHelper，创建一个新的
+         * DatabaseHelper，用于后续使用。
          *
-         * 由于数据库升级可能会修改表的结构，而原生的SqliteDatabaseOpenHelper可能对原有的表结构存在缓存，这会导致进行过
-         * 数据库升级的DatabaseHelper所创建的Dao对象在第一次对升级后的数据库进行查询时，只能查询到原有表结构字段所包含的
-         * 数据。由于原有表结构字段并不一定能正确映射到新的实体类当中，所以上述Dao对象在第一次对升级后的数据库进行查询时将
-         * 会出现异常。
+         * 由于数据库升级可能会修改表的结构，而原生的SqliteDatabaseOpenHelper可能对原有的表结构存在
+         * 缓存，这会导致进行过数据库升级的DatabaseHelper所创建的Dao对象在第一次对升级后的数据库进行
+         * 查询时，只能查询到原有表结构字段所包含的数据。由于原有表结构字段并不一定能正确映射到新的实
+         * 体类当中，所以上述Dao对象在第一次对升级后的数据库进行查询时将会出现异常。
          */
         return newHelper()
     }
 
-    private fun newQueryBuilder(condition: QueryBuilder<T, Any>.() -> Unit) = rawDao.queryBuilder().apply {
-        condition()
-    }
-
-    private fun newPreparedQueryBuilder(condition: QueryBuilder<T, Any>.() -> Unit) = newQueryBuilder(condition).prepare()
+    private fun buildQuery(
+        condition: QueryBuilder<T, Any>.() -> Unit
+    ): PreparedQuery<T> = rawDao.queryBuilder().apply(condition).prepare()
 
     fun listAll(): List<T> = rawDao.queryForAll()
 
-    fun getById(id: Any?): T? {
-        entityCache[id] = null
-        return getCacheById(id)
-    }
-
-    fun getCacheById(id: Any?): T? {
-        entityCache[id]?.let { return it }
-        return rawDao.queryForId(id).also {
+    private fun getById(id: Any, useCache: Boolean): T? {
+        if(useCache) {
+            entityCache[id]?.let {
+                return it
+            }
+        } else {
+            entityCache.remove(id)
+        }
+        return rawDao.queryForId(id)?.also {
             entityCache[id] = it
         }
     }
 
-    fun query(condition: QueryBuilder<T, Any>.() -> Unit): List<T> = rawDao.query(newPreparedQueryBuilder(condition))
+    fun getById(id: Any): T? = getById(id, false)
 
-    fun queryOne(condition: QueryBuilder<T, Any>.() -> Unit): T? {
-        val results = rawDao.query(newQueryBuilder(condition).limit(1).prepare())
-        return if(results.isEmpty()) null else results[0]
+    fun getByIdCached(id: Any): T? = getById(id, true)
+
+    fun query(condition: QueryBuilder<T, Any>.() -> Unit): List<T> = run {
+        rawDao.query(buildQuery(condition))
     }
 
-    fun save(entity: T) = rawDao.create(entity)
+    fun queryOne(condition: QueryBuilder<T, Any>.() -> Unit): T? = run {
+        query {
+            condition()
+            limit(1)
+        }.firstOrNull()
+    }
 
-    private fun getId(entity: T): Any? = idField?.get(entity)
+    private fun getId(entity: T): Any = idProp.get(entity)!!
 
+    @Synchronized
+    fun save(entity: T): Int = rawDao.create(entity)
+
+    @Synchronized
     fun updateById(entity: T) {
         rawDao.update(entity)
-        entityCache[getId(entity)] = null
+        entityCache.remove(getId(entity))
     }
 
+    @Synchronized
     fun saveOrUpdate(entity: T) {
-        idField ?: run {
-            save(entity)
-            return
-        }
-        val id = idField.get(entity)
-        if(getById(id) == null) save(entity) else updateById(entity)
+        rawDao.createOrUpdate(entity)
+        entityCache.remove(getId(entity))
     }
 
+    @Synchronized
     fun deleteById(id: Any) {
         rawDao.deleteById(id)
-        entityCache[id] = null
+        entityCache.remove(id)
     }
 }

@@ -6,12 +6,11 @@ p-root = "1.1.0-dev"
 gp-honoka-android = "1.0.0-dev"
 
 # android related version
-a-android-sdk-compile = "33"
-a-android-sdk-min = "26"
+a-compile-sdk = "33"
+a-min-sdk = "26"
 
 # dependencies version
-d-honoka-kotlin-utils = "1.0.1-dev"
-d-honoka-framework-utils = "1.0.4"
+d-honoka-kotlin-utils = "1.1.2-dev"
 d-android-gradle-plugin = "8.0.0"
 d-kotlin = "1.8.10"
 d-kotlin-coroutines = "1.6.4"
@@ -31,4 +30,3 @@ ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "d-kto
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "d-ktor" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "d-ktor" }
 honoka-kotlin-utils = { module = "de.honoka.sdk:honoka-kotlin-utils", version.ref = "d-honoka-kotlin-utils" }
-honoka-framework-utils = { module = "de.honoka.sdk:honoka-framework-utils", version.ref = "d-honoka-framework-utils" }

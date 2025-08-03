@@ -32,7 +32,7 @@ fi
 repository_name=development
 is_development_version=true
 
-if [ -z $projects_passed ]; then
+if [ -z "$projects_passed" ]; then
   echo -e '\n\nUsing development repository to publish artifacts.\n'
 else
   repository_name=release

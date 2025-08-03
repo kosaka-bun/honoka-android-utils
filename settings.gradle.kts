@@ -6,8 +6,8 @@ pluginManagement {
         maven("https://maven.aliyun.com/repository/gradle-plugin")
         maven("https://maven.aliyun.com/repository/public")
         gradlePluginPortal()
-        google()
         mavenCentral()
+        google()
         maven("https://mirrors.honoka.de/maven-repo/release")
         maven("https://mirrors.honoka.de/maven-repo/development")
     }

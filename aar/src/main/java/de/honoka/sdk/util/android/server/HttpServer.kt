@@ -2,84 +2,50 @@
 
 package de.honoka.sdk.util.android.server
 
-import fi.iki.elonen.NanoHTTPD
+import de.honoka.sdk.util.android.server.ktor.KtorEngine
 
-@Suppress("ConstPropertyName")
 object HttpServerVariables {
 
-    var serverPort = 38081
+    internal const val FIRST_TRY_PORT = 38081
 
-    const val imageUrlPrefix = "/android/img"
+    internal const val IMAGE_URL_PREFIX = "/android/img"
 
-    fun getUrlByPath(path: String) = "http://localhost:$serverPort$path"
+    fun getUrlByPath(path: String): String = "http://localhost:${HttpServer.server!!.port}$path"
 
-    fun getImageUrlByPath(path: String) = getUrlByPath("$imageUrlPrefix$path")
+    fun getImageUrlByPath(path: String): String = getUrlByPath("$IMAGE_URL_PREFIX$path")
 
-    fun getApiUrlByPath(path: String) = getUrlByPath("/api$path")
+    fun getApiUrlByPath(path: String): String = getUrlByPath("/api$path")
 }
 
-@Suppress("CanBeParameter")
-class HttpServer(val port: Int = HttpServerVariables.serverPort) {
+object HttpServer {
 
-    companion object {
+    internal var server: KtorEngine? = null
 
-        lateinit var instance: HttpServer
+    internal val staticResourcesPrefixes = arrayOf(
+        "/assets", "/font", "/img", "/js", "/favicon.ico"
+    )
 
-        var customRoutingList: List<RoutingDefinition> = listOf()
+    private lateinit var usingOptions: KtorEngine.Options
 
-        val staticResourcesPrefixes = arrayOf(
-            "/assets", "/font", "/img", "/js", "/favicon.ico"
-        )
-
-        fun createInstance() {
-            HttpServerUtils.initServerPorts()
-            instance = HttpServer().apply { start() }
+    @Synchronized
+    fun start(options: KtorEngine.Options? = null): KtorEngine {
+        if(server?.isActive == true) {
+            server!!.stop()
         }
-
-        fun checkOrRestartInstance() {
-            if(!::instance.isInitialized) {
-                createInstance()
-                return
-            }
-            if(instance.isActive) return
-            createInstance()
+        options?.let {
+            usingOptions = it
         }
+        server = KtorEngine(usingOptions).apply {
+            start()
+        }
+        return server!!
     }
 
-    private var engine: KtorEngine = KtorEngine(port, customRoutingList)
-
-    val isActive get() = engine.isActive
-
-    fun start() = engine.start()
-
-    fun stop() = engine.rawEngine?.stop()
-}
-
-object HttpServerUtils {
-
-    fun getOneAvaliablePort(startPort: Int): Int {
-        var port = startPort
-        var successful = false
-        //验证端口可用性
-        for(i in 0 until 10) {
-            try {
-                DefaultNanoHttpd(port).apply {
-                    start()
-                    stop()
-                }
-                successful = true
-                break
-            } catch(t: Throwable) {
-                port += 1
-            }
+    @Synchronized
+    fun restartIfStopped(): KtorEngine {
+        if(server?.isActive == true) {
+            return server!!
         }
-        if(!successful) throw Exception("端口范围（$startPort - ${startPort + 10}）均被占用")
-        return port
-    }
-
-    fun initServerPorts() {
-        HttpServerVariables.serverPort = getOneAvaliablePort(HttpServerVariables.serverPort)
+        return start()
     }
 }
-
-internal class DefaultNanoHttpd(port: Int) : NanoHTTPD(port)

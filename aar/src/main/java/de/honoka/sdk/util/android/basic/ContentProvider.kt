@@ -1,4 +1,4 @@
-package de.honoka.sdk.util.android.common
+package de.honoka.sdk.util.android.basic
 
 import android.content.ContentProvider
 import android.content.ContentResolver
@@ -7,16 +7,18 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.core.net.toUri
 import cn.hutool.core.exceptions.ExceptionUtil
 import cn.hutool.core.util.StrUtil
 import cn.hutool.json.JSON
 import cn.hutool.json.JSONObject
 import cn.hutool.json.JSONUtil
+import de.honoka.sdk.util.kotlin.basic.tryCastOrNull
 
 abstract class BaseContentProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
-        GlobalComponents.initApplicationField(context)
+        GlobalComponents.init(context)
         return true
     }
 
@@ -36,16 +38,19 @@ abstract class BaseContentProvider : ContentProvider() {
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?): Int = 0
 
-    override fun call(method: String, arg: String?, extras: Bundle?): Bundle = Bundle().apply {
+    override fun call(method: String, arg: String?, extras: Bundle?): Bundle {
+        val bundle = Bundle()
         val args = if(StrUtil.isNotBlank(arg)) JSONUtil.parse(arg) else null
         val result = try {
-            call(method.ifBlank { null }, args)?.let { if(it !is Unit) it else null }
+            call(method.ifBlank { null }, args)?.let {
+                if(it !is Unit) it else null
+            }
         } catch(t: Throwable) {
             ExceptionUtil.getRootCause(t).also {
                 Log.e(javaClass.simpleName, "", it)
             }
         }
-        putString("json", JSONObject().also {
+        val json = JSONObject().also {
             if(result !is Throwable) {
                 it["result"] = result
             } else {
@@ -54,28 +59,23 @@ abstract class BaseContentProvider : ContentProvider() {
                     jo["stackTrace"] = ExceptionUtil.stacktraceToString(result)
                 }
             }
-        }.toString())
+        }
+        bundle.putString("json", json.toString())
+        return bundle
     }
 
     abstract fun call(method: String?, args: JSON?): Any?
 }
 
-object ContentProviderUtils {
+data class ContentProviderCallException(
 
-    inline fun <reified T> getTypedResult(result: Any): T = result.let {
-        when {
-            T::class.java.isAssignableFrom(it.javaClass) -> it as T
-            it is JSON -> it.toBean(T::class.java)
-            else -> throw ClassCastException("Cannot cast ${it.javaClass.name} to ${T::class.java.name}")
-        }
-    }
-}
+    val info: String,
 
-@Suppress("MemberVisibilityCanBePrivate", "CanBeParameter", "unused")
-class ContentProviderCallException(val info: String, val stackTraceText: String) : Exception(info)
+    val stackTraceText: String
+) : Exception(info)
 
 fun ContentResolver.call(authority: String, method: String? = null, args: Any? = null): Any? {
-    val uri = Uri.parse("content://$authority")
+    val uri = "content://$authority".toUri()
     val argsStr = args?.let { JSONUtil.toJsonStr(args) }
     val result = call(uri, method ?: "", argsStr, null)?.let {
         it.getString("json").let { jsonStr ->
@@ -84,7 +84,9 @@ fun ContentResolver.call(authority: String, method: String? = null, args: Any? =
                 val stackTrace = error.getStr("stackTrace").apply {
                     Log.e(ContentResolver::class.simpleName, this)
                 }
-                throw ContentProviderCallException(error.getStr("info"), stackTrace)
+                throw ContentProviderCallException(
+                    error.getStr("info"), stackTrace
+                )
             }
             json["result"]
         }
@@ -93,21 +95,13 @@ fun ContentResolver.call(authority: String, method: String? = null, args: Any? =
 }
 
 /*
- * 需注意，若实化泛型T中含有嵌套泛型，比如调用该方法时表现为：call<List<Entity>>()，则在代码中只能获取到
- * 泛型T的顶级类型，即List的Class对象。
+ * 需注意，若实化泛型T中含有嵌套泛型，比如调用该方法时表现为：typedCall<List<Entity>>()，则在代码中获取
+ * T::class时，只能获取到泛型T的顶级类型，即List的Class对象。
  */
-inline fun <reified T> ContentResolver.typedCall(
+inline fun <reified T : Any> ContentResolver.typedCallNullable(
     authority: String, method: String? = null, args: Any? = null
-): T = call(authority, method, args).let {
-    ContentProviderUtils.getTypedResult<T>(it!!)
-}
+): T? = call(authority, method, args).tryCastOrNull(T::class)
 
-fun contentResolverCall(authority: String, method: String? = null, args: Any? = null): Any? = run {
-    GlobalComponents.application.contentResolver.call(authority, method, args)
-}
-
-inline fun <reified T> contentResolverTypedCall(
+inline fun <reified T : Any> ContentResolver.typedCall(
     authority: String, method: String? = null, args: Any? = null
-): T = contentResolverCall(authority, method, args).let {
-    ContentProviderUtils.getTypedResult<T>(it!!)
-}
+): T = typedCallNullable(authority, method, args)!!

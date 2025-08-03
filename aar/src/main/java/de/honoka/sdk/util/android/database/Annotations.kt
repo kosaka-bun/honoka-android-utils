@@ -1,7 +1,7 @@
 package de.honoka.sdk.util.android.database
 
-@Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
 annotation class Table(
 
     val version: Int

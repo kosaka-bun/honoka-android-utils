@@ -11,40 +11,32 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import de.honoka.sdk.util.android.R
-import de.honoka.sdk.util.android.common.launchCoroutineOnUiThread
-import de.honoka.sdk.util.android.jsinterface.JavascriptInterfaceContainer
+import de.honoka.sdk.util.android.basic.launchOnUi
+import de.honoka.sdk.util.android.jsinterface.JsInterfaceRegistrar
 import de.honoka.sdk.util.android.server.HttpServer
-import de.honoka.sdk.util.android.server.HttpServerVariables
 import kotlinx.coroutines.delay
+import org.intellij.lang.annotations.Language
 import kotlin.system.exitProcess
 
 @SuppressLint("SetJavaScriptEnabled")
-@Suppress("MemberVisibilityCanBePrivate")
 abstract class AbstractWebActivity : AppCompatActivity() {
 
-    protected lateinit var url: String
-
-    /**
-     * 是否是该应用当中第一个被开启的WebActivity
-     */
-    protected var firstWebActivity: Boolean = false
+    protected val extras by lazy { getDefaultExtras(WebActivityExtras::class)!! }
 
     lateinit var webView: WebView
 
     protected val webViewClient = object : WebViewClient() {
 
         //重写此方法，解决WebView在重定向时打开系统浏览器的问题
-        override fun shouldOverrideUrlLoading(
-            view: WebView,
-            request: WebResourceRequest
-        ): Boolean {
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url.toString()
             //禁止WebView加载未知协议的URL
-            if(!url.startsWith("http")) return true
+            if(!url.startsWith("http")) {
+                return true
+            }
             view.loadUrl(url)
             return true
         }
@@ -75,7 +67,7 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         }
     }
 
-    protected lateinit var jsInterfaceContainer: JavascriptInterfaceContainer
+    private lateinit var jsInterfaceRegistrar: JsInterfaceRegistrar
 
     protected var fullScreenView: View? = null
 
@@ -96,11 +88,13 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         private var lastTimePressBack = 0L
 
         override fun handleOnBackPressed() {
-            launchCoroutineOnUiThread {
+            launchOnUi {
                 try {
-                    val result = dispatchEventToListenersInWebView("onBackButtonPressedListeners")
+                    val result = dispatchEventToListenersInWebView(
+                        "onBackButtonPressedListeners"
+                    )
                     if(!result) doBack()
-                } catch(t: Throwable) {
+                } catch(_: Throwable) {
                     doBack()
                 }
             }
@@ -111,16 +105,16 @@ abstract class AbstractWebActivity : AppCompatActivity() {
                 webView.goBack()
                 return
             }
-            if(!firstWebActivity) {
+            if(!extras.firstWebActivity) {
                 finish()
                 return
             }
             if(System.currentTimeMillis() - lastTimePressBack > 2500) {
-                Toast.makeText(this@AbstractWebActivity, "再进行一次返回退出应用", Toast.LENGTH_SHORT).show()
+                toast("再进行一次返回退出应用")
                 lastTimePressBack = System.currentTimeMillis()
             } else {
                 finish()
-                if(firstWebActivity) exitProcess(0)
+                if(extras.firstWebActivity) exitProcess(0)
             }
         }
     }
@@ -155,7 +149,6 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         //解决状态栏白底白字的问题
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         setContentView(R.layout.activity_web)
-        initActivityParams()
         initWebView()
     }
 
@@ -165,7 +158,7 @@ abstract class AbstractWebActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        HttpServer.checkOrRestartInstance()
+        HttpServer.restartIfStopped()
         extendedOnResume()
         dispatchEventToListenersInWebViewDirectly("onActivityResumeListeners")
         super.onResume()
@@ -178,27 +171,22 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    protected fun initActivityParams() {
-        url = intent.getStringExtra("url") ?: HttpServerVariables.getUrlByPath("")
-        firstWebActivity = intent.getBooleanExtra("firstWebActivity", false)
-    }
-
     protected fun initWebView() {
         webView = findViewById(R.id.web_view)
+        val activity = this
         webView.run {
-            webViewClient = this@AbstractWebActivity.webViewClient
-            webChromeClient = this@AbstractWebActivity.webChromeClient
+            webViewClient = activity.webViewClient
+            webChromeClient = activity.webChromeClient
             settings.run {
                 //必须打开，否则网页可能显示为空白
                 javaScriptEnabled = true
             }
             isVerticalScrollBarEnabled = false
             scrollBarStyle = View.SCROLLBARS_OUTSIDE_OVERLAY
-            jsInterfaceContainer = JavascriptInterfaceContainer(
-                definedJsInterfaceInstances,
-                this@AbstractWebActivity
+            jsInterfaceRegistrar = JsInterfaceRegistrar(
+                activity, definedJsInterfaceInstances
             )
-            loadUrl(this@AbstractWebActivity.url)
+            loadUrl(activity.extras.url)
         }
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
         orientationEventListener.enable()
@@ -221,7 +209,9 @@ abstract class AbstractWebActivity : AppCompatActivity() {
     }
 
     //返回true表示有监听器的预定义行为被触发
+    @Suppress("JSUnresolvedReference")
     protected suspend fun dispatchEventToListenersInWebView(listenerName: String): Boolean {
+        @Language("JavaScript")
         val script = "window.androidEventListenerUtils.invokeListeners('$listenerName')"
         var result: String? = null
         webView.evaluateJavascript(script) {
@@ -235,11 +225,13 @@ abstract class AbstractWebActivity : AppCompatActivity() {
     }
 
     protected fun dispatchEventToListenersInWebViewDirectly(listenerName: String) {
-        launchCoroutineOnUiThread { dispatchEventToListenersInWebView(listenerName) }
+        launchOnUi {
+            dispatchEventToListenersInWebView(listenerName)
+        }
     }
 
     fun simulateClick(positionX: Float, positionY: Float) {
-        fun obtainEvent(action: Int) = MotionEvent.obtain(
+        fun obtainEvent(action: Int): MotionEvent = MotionEvent.obtain(
             SystemClock.uptimeMillis(),
             SystemClock.uptimeMillis(),
             action,
@@ -257,6 +249,16 @@ abstract class AbstractWebActivity : AppCompatActivity() {
         }
     }
 }
+
+data class WebActivityExtras(
+
+    var url: String,
+
+    /**
+     * 是否是该应用当中第一个被开启的WebActivity
+     */
+    var firstWebActivity: Boolean
+)
 
 class DefaultWebActivity : AbstractWebActivity() {
 
