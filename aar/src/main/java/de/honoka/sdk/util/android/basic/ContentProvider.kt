@@ -98,10 +98,10 @@ fun ContentResolver.call(authority: String, method: String? = null, args: Any? =
  * 需注意，若实化泛型T中含有嵌套泛型，比如调用该方法时表现为：typedCall<List<Entity>>()，则在代码中获取
  * T::class时，只能获取到泛型T的顶级类型，即List的Class对象。
  */
-inline fun <reified T : Any> ContentResolver.typedCallNullable(
+inline fun <reified T : Any> ContentResolver.typedCallOrNull(
     authority: String, method: String? = null, args: Any? = null
 ): T? = call(authority, method, args).tryCastOrNull(T::class)
 
 inline fun <reified T : Any> ContentResolver.typedCall(
     authority: String, method: String? = null, args: Any? = null
-): T = typedCallNullable(authority, method, args)!!
+): T = typedCallOrNull(authority, method, args)!!
