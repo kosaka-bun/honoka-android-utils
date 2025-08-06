@@ -4,7 +4,10 @@ import android.webkit.MimeTypeMap
 import cn.hutool.core.exceptions.ExceptionUtil
 import cn.hutool.json.JSONObject
 import de.honoka.sdk.util.android.basic.global
-import de.honoka.sdk.util.android.server.*
+import de.honoka.sdk.util.android.server.HttpServer
+import de.honoka.sdk.util.android.server.HttpServerVariables
+import de.honoka.sdk.util.android.server.StatusPageHandler
+import de.honoka.sdk.util.android.server.respondJson
 import de.honoka.sdk.util.web.ApiResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -70,7 +73,7 @@ private class RequestMappingsRegistrar(private val routing: Routing) {
         return mimeType
     }
 
-    private suspend fun RequestExecutor.respondAsset(path: String, contentType: ContentType? = null) {
+    private suspend fun RoutingContext.respondAsset(path: String, contentType: ContentType? = null) {
         val content = global.assets.runCatching {
             open(path).use { it.readBytes() }
         }.getOrElse {
@@ -82,7 +85,7 @@ private class RequestMappingsRegistrar(private val routing: Routing) {
         call.respondBytes(content, contentType ?: guessContentType(path))
     }
 
-    private suspend fun RequestExecutor.respondFile(path: String, contentType: ContentType? = null) {
+    private suspend fun RoutingContext.respondFile(path: String, contentType: ContentType? = null) {
         val content = File(path).run {
             if(!exists()) throw NotFoundException()
             readBytes()
@@ -90,7 +93,7 @@ private class RequestMappingsRegistrar(private val routing: Routing) {
         call.respondBytes(content, contentType ?: guessContentType(path))
     }
 
-    private suspend fun RequestExecutor.respondRoot() {
+    private suspend fun RoutingContext.respondRoot() {
         respondAsset("web/index.html")
     }
 

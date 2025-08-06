@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.gradle.plugin) apply false
     alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.dependency.management)
     alias(libs.plugins.honoka.android)
 }
 
@@ -12,16 +11,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "io.spring.dependency-management")
     apply(plugin = "de.honoka.gradle.plugin.android")
-
-    val libs = rootProject.libs
-
-    dependencyManagement {
-        imports {
-            mavenBom(libs.kotlin.bom.get().toString())
-        }
-    }
 }
 
 honoka {
@@ -31,3 +21,6 @@ honoka {
         }
     }
 }
+
+libs.versions.d.kotlin.coroutines
+libs.versions.d.lombok

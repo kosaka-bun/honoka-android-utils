@@ -1,6 +1,6 @@
 # Honoka Android Utils
 ![Java](./docs/img/Java-8-brightgreen.svg)
-![Kotlin](https://img.shields.io/badge/Kotlin-1.8.0-brightgreen?logo=Kotlin)<br />
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.0-brightgreen?logo=Kotlin)<br />
 [![License](https://img.shields.io/github/license/kosaka-bun/honoka-android-utils?label=License&color=blue&logo=GitHub)](./LICENSE)
 ![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/honoka-android-utils?label=Stars&logo=GitHub&style=flat)
 [![Release](https://img.shields.io/github/release/kosaka-bun/honoka-android-utils?label=Release&logo=GitHub)](../../releases)

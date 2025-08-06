@@ -16,7 +16,7 @@ class KtorEngine(private val options: Options = Options()) {
         var customRoutings: List<RoutingDefinition> = listOf()
     )
 
-    private var rawEngine: ApplicationEngine? = null
+    private var rawEngine: EmbeddedServer<*, *>? = null
 
     val isActive: Boolean
         get() = rawEngine?.application?.isActive == true

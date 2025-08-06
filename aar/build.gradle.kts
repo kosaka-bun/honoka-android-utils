@@ -1,6 +1,6 @@
 import de.honoka.gradle.plugin.android.ext.defaultAar
 import de.honoka.gradle.plugin.android.ext.kotlinAndroid
-import de.honoka.gradle.util.dsl.implementationApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.gradle.plugin)
@@ -14,6 +14,8 @@ android {
     namespace = "de.honoka.sdk.util.android"
     compileSdk = libs.versions.a.compile.sdk.get().toInt()
 
+    val javaVersion = JavaVersion.VERSION_1_8
+
     defaultConfig {
         minSdk = libs.versions.a.min.sdk.get().toInt()
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
@@ -23,7 +25,6 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            @Suppress("UnstableApiUsage")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -36,28 +37,31 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = sourceCompatibility
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
-    kotlinOptions {
-        jvmTarget = compileOptions.sourceCompatibility.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+            freeCompilerArgs.addAll("-Xjsr305=strict", "-Xjvm-default=all")
+        }
     }
 }
 
 //noinspection UseTomlInstead
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.5.1")
-    implementationApi(libs.honoka.kotlin.utils)
-    implementationApi("cn.hutool:hutool-all:5.8.18")
-    implementationApi("com.j256.ormlite:ormlite-android:5.1")
-    implementationApi(libs.ktor.server.core)
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    api(libs.honoka.kotlin.utils)
+    api("cn.hutool:hutool-all:5.8.39")
+    api("com.j256.ormlite:ormlite-android:5.1")
+    api(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.cors)
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
 
 honoka {
@@ -65,8 +69,6 @@ honoka {
         dependencies {
             kotlinAndroid()
             lombok()
-            libs.versions.d.kotlin.coroutines
-            libs.versions.d.lombok
         }
 
         publishing {

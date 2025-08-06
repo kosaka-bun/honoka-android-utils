@@ -11,20 +11,18 @@ a-min-sdk = "26"
 
 # dependencies version
 d-honoka-kotlin-utils = "1.1.2-dev"
-d-android-gradle-plugin = "8.0.0"
-d-kotlin = "1.8.10"
-d-kotlin-coroutines = "1.6.4"
-d-ktor = "2.2.3"
-d-lombok = "1.18.26"
+d-android-gradle-plugin = "8.11.1"
+d-kotlin = "2.2.0"
+d-kotlin-coroutines = "1.10.2"
+d-ktor = "3.2.2"
+d-lombok = "1.18.38"
 
 [plugins]
-honoka-android = { id = "de.honoka.gradle.plugin.android", version.ref = "gp-honoka-android" }
 android-gradle-plugin = { id = "com.android.library", version.ref = "d-android-gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "d-kotlin" }
-dependency-management = "io.spring.dependency-management:1.1.6"
+honoka-android = { id = "de.honoka.gradle.plugin.android", version.ref = "gp-honoka-android" }
 
 [libraries]
-kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "d-kotlin" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "d-ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "d-ktor" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "d-ktor" }
