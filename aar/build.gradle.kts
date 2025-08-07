@@ -1,6 +1,5 @@
 import de.honoka.gradle.plugin.android.ext.defaultAar
 import de.honoka.gradle.plugin.android.ext.kotlinAndroid
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.gradle.plugin)
@@ -10,11 +9,13 @@ plugins {
 
 version = rootProject.version
 
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(8)
+}
+
 android {
     namespace = "de.honoka.sdk.util.android"
     compileSdk = libs.versions.a.compile.sdk.get().toInt()
-
-    val javaVersion = JavaVersion.VERSION_1_8
 
     defaultConfig {
         minSdk = libs.versions.a.min.sdk.get().toInt()
@@ -36,14 +37,8 @@ android {
         srcDir("/patchSrc/main/java")
     }
 
-    compileOptions {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
-
     kotlin {
         compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
             freeCompilerArgs.addAll("-Xjsr305=strict", "-Xjvm-default=all")
         }
     }
